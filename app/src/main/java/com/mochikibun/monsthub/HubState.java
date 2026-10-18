@@ -14,7 +14,6 @@ public final class HubState {
   r.put("accounts",new JSONArray());r.put("tasks",new JSONArray());r.put("days",new JSONObject());r.put("orb_history",new JSONArray());r.put("reset_hour",4);
   HubState s=new HubState(r);PlannerData.ensure(r);
   for(String name:new String[]{"ログイン","日課","書庫","神殿"})s.addTask(name);
-  for(int i=1;i<=12;i++)s.addAccount(i==1?"メイン":"サブ"+(i-1));
   return s;
  }
  public static HubState parse(String json)throws Exception {

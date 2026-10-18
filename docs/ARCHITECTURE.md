@@ -1,4 +1,4 @@
-# MONST HUB v0.3 構造
+# MONST HUB v0.3.1 構造
 - HubActivity：黒白ホーム、アカウント、日課・絆、オーブ、URL、追加した管理画面、バックアップ、画像添付。
 - HubState：アカウント等と日付別記録。schema_version=1を読み込み時に2へ移行。旧ファイル名は維持。
 - PlannerData：inventory / custom_characters / teams / missions / goals / formations / orb_plans。UUIDで保持。入力・参照・上限を検証。
@@ -21,3 +21,8 @@ schema_version=2。plannerの追加データ、個別追加キャラ、画像、
 管理の数値・チェック・キャラ所持は手動。ゲームアカウントへのログインやゲーム内データの自動取得はしない。
 Google Play公開向けの署名・権利確認・申請は今回の作業対象外。
 Discord BOTとmonst-hub-feed、ユーザーのGitHub同期フォルダーへの変更はしない。
+
+## v0.3.1
+新規アカウントは0件。既存の登録は保持。図鑑の前にアカウント選択画面、全垢横断の入口も保持。48件ずつのアイコングリッド。PlannerData.adjustOwnedは対象垢のみに増減を適用し、複数の育成記録を勝手に統合しない。
+CatalogIconsは表示対象だけ取得し、画像のメモリ・ディスクキャッシュを上限付きで保持する。URLはGameWith CDNの許可したトークン形式のみ。
+SQLiteのicon列はALTER TABLEで追加し、既存キャッシュを消さない。
