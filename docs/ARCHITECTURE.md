@@ -1,20 +1,22 @@
-# 構成と拡張
-- MainActivity: 日本時間のカレンダーとフィルタ、選択日の表示。
-- Campaign: 日付・カテゴリ・日別属性のモデル。終了日を含む。
-- FeedParser: schema_version=1のJSONを検証。壊れたJSONは成功扱いにしない。
-- FeedRepository: 指定された公開URLをGETするだけ。成功したcampaignsのみ端末内キャッシュ。status取得失敗は必ず注意。
-- UIはネイティブAndroid、外部UIライブラリなし。Android 8.0以上。
+# v0.2 構成
+- HubActivity：ホーム、垢の編集、日課、絆、オーブ、URL、設定、Android標準ファイル選択を使ったバックアップ。
+- HubState：Androidに依存しない管理モデル。UUIDのアカウントID・日課IDで記録を保持し、名前変更では記録が動かない。
+- HubStore：アプリ専用領域のJSONをAtomicFileで保存。書き込み失敗では旧データへ戻す。壊れた保存データは勝手に初期化しない。
+- MainActivity／Campaign／FeedParser／FeedRepository：既存カレンダーとフィードの取得・キャッシュ。既存のdegraded表示を維持。
 
-## 12アカウント管理の拡張案（未実装）
-アカウントID・表示名・並び順を持つAccount、accountIdと日付をキーとするDailyProgress、専用AccountRepositoryを別パッケージに追加する。
-Campaignとフィード取得にはアカウント状態を混在させず、将来Room等で端末内保存する。今回ログイン情報やゲームアカウント情報は収集しない。
+## 保存形式
+format=monst-hub-backup、schema_version=1。accountsはid/name/memo/url/orbs。tasksはid/name。
+daysは日本時間の切替時刻を差し引いた日付→accountId→taskId/bondのboolean。
+orb_historyはaccount_id/at/delta/balance/memo。reset_hourは0〜23（既定4）。
+バックアップを検証し、重複ID、不明な参照、不正なURL・残高・日付・型を拒否。復元は確認後に保存成功してからメモリ上のデータを置き換える。
+変更は状態のコピーに適用し、保存に成功した場合だけ画面の状態を更新する。
+100垢・30日課・10,000履歴・5MBの上限。履歴表示は最新50件。これらの上限を超えるバックアップは拒否する。
 
-## 配信仕様
-campaigns.json: schema_version/generated_at/campaigns。categoryはarchive/temple/normal/other。
-各要素のname/start_date/end_date/daily_attributes[{date,attribute}]/source.urlを使用。
-status.json: schema_version/status。ok以外は注意表示。degradedでは不完全の可能性を明示。
-日単位のフィードのため開始終了時刻は表示しない。データがない日は「イベントなし」と断定しない。
-新しい形式に変わった場合はFeedParserを更新する。
+## 切替・リセット
+日付はAsia/Tokyoで計算。午前4時を境に新しいキーを参照するため、アプリを閉じていても起動時に正しい当日を表示。
+表示中は15秒ごととチェック操作前に再確認。手動リセットは当日のbondフラグのみ。
 
-キャッシュは有効期限で消去せず、通信失敗時に前回データとして明示する。generated_atは常時表示。
-既存Discord BOT/monst-hub-feedへの書き込み処理・トークン・秘密情報は含まない。
+## 将来の拡張
+現在は端末内のみ。ログイン情報・ゲームへの操作・自動データ取得は実装しない。
+固定の配布用署名、過去の日課表示、垢の並べ替え、複数URLの登録等は今後の対象。
+BOT・フィードリポジトリへの変更処理は一切含まない。

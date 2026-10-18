@@ -57,7 +57,7 @@ public final class MainActivity extends Activity {
   eventHeading=label(selected.format(DateTimeFormatter.ofPattern("M月d日（E）",Locale.JAPAN))+" のイベント",20,ACCENT);body.addView(eventHeading);
   if(data==null||data.feed==null)body.addView(label(loading?"データを読み込んでいます…":"表示できるデータがありません。上の更新ボタンで再試行してください。",15,TEXT));
   else {int count=0;for(Campaign c:data.feed.campaigns)if(c.active(selected,filter)){count++;event(c);}if(count==0)body.addView(label("該当するイベントは配信データにありません。\n未掲載・取得漏れの可能性もあるため、公式情報をご確認ください。",14,MUTED));}
-  addSpace(body);body.addView(label("非公式の補助アプリです。開催時間・詳細は公式情報をご確認ください。\n12アカウント管理は今後追加予定です。",12,MUTED));
+  addSpace(body);body.addView(label("非公式の補助アプリです。開催時間・詳細は公式情報をご確認ください。",12,MUTED));
  }
  private void notice(String s){TextView t=label(s,14,Color.rgb(255,219,144));t.setBackground(bg(Color.rgb(65,48,31)));body.addView(t);addSpace(body);}
  private void move(int by){month=month.plusMonths(by);selected=month.atDay(Math.min(selected.getDayOfMonth(),month.lengthOfMonth()));render();}

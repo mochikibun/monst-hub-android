@@ -1,79 +1,61 @@
-# MONST HUB Android
-ダークブルー×水色の非公式キャンペーンカレンダー。Android Studioを使わず、GitHub Actionsでdebug APKを作れます。Android 8.0以上。
+# MONST HUB v0.2.0 — 全機能版
+Android 8.0以上。Android Studio不要、GitHub ActionsでAPKを生成できます。
 
-## 1. ZIPを展開する（パソコンで操作）
-1. `MONST-HUB-Android-project.zip`をダウンロード。
-2. Windowsで右クリック →「すべて展開」。ZIPを開くだけでなく展開してください。
-3. 展開先でREADME.md、app、gradle、.github、gradlewなどが見えることを確認します。
+## 今回の機能
+- 黒×青のホーム：登録数、日課完了垢数、合計オーブ。
+- サブ垢管理：初期12垢（メイン＋サブ1〜11）。名前・メモ編集、追加・削除（最大100垢）。
+- 日課：全垢共通の項目を自由に追加・削除。初期はログイン／日課／書庫／神殿。垢ごとに手動チェック。
+- 絆：アカウントごとの当日完了チェック。毎朝4時（日本時間）に新しい日付の未完了へ切替。当日分を全垢まとめて戻す手動リセットも用意。
+- オーブ：垢ごとの残高入力、増減の記録、メモ。合計残高と最近の履歴（最大50件表示、保存は最大10,000件）。
+- マルチURL：各垢に自分用URLを1つ保存・コピー・外部アプリで開く。http/httpsのURLに対応。URLの自動発行や他人への共有機能はありません。
+- キャンペーン：従来のカレンダー、月移動、日付タップ、カテゴリフィルタ、日別属性、更新日時、通信失敗・degraded表示を維持。
+- 設定：日課・絆の切替時刻変更、JSONバックアップ保存・復元。
+- データは端末内に保存。名前・日課・オーブ等は手動入力で、ゲームとの自動連携はありません。友達の端末とは別々に保存されます。
 
-## 2. GitHubにアップロード
-1. GitHubにログインし、`https://github.com/mochikibun/monst-hub-android` を開きます。
-2. **monst-hub-android**であることを確認します。BOTやmonst-hub-feedは開かなくて大丈夫です。
-3. 「Code」タブ →「Add file」→「Upload files」。画面が狭い場合は「＋」の中です。
-4. 展開したフォルダーの**中身すべて**をドラッグします。外側のフォルダーやZIP自体はアップロードしません。
-5. アップロード一覧に `app/build.gradle`、`gradle/wrapper/gradle-wrapper.jar`、`.github/workflows/build-apk.yml` があることを確認。
-6. 既存のREADME.mdは今回の説明に置き換えてOK。下の「Commit changes」を押します。mainに直接保存を選びます。
+## すでにGitHub Desktopを使っている方向け：入れ替え手順
+1. `MONST-HUB-v0.2-project.zip`を右クリック →「すべて展開」。
+2. GitHub Desktopで `monst-hub-android` を選び、必要なら「Fetch origin」→「Pull origin」で最新状態にします。
+3. 「Repository → Show in Explorer」で同期フォルダーを開きます。
+4. 展開した中の `.github`、`app`、`docs`、`gradle` と、それ以外のファイルすべてをコピーし、同期フォルダーに貼り付けます。同名ファイルは置き換えます。
+5. **同期フォルダーや `.git` フォルダーは削除しません。** 今回は先に既存ファイルを消す必要もありません。
+6. GitHub Desktopで変更を確認し、Summaryに `v0.2 全機能追加` と入力 →「Commit to main」→「Push origin」。
+7. リポジトリの「Actions → Build Android APK」を開いて最新の実行がSuccessになるまで待ちます。
+8. 実行画面の「Artifacts」（上部の件数リンクからも移動できます）→ **MONST-HUB-debug-apk** をダウンロードしZIPを展開。中の `app-debug.apk` がアプリ本体です。
 
-### .githubがアップロードできない／Actionsにワークフローがない場合
-GitHubの画面で確実に追加できます。
-1. 「Code」→「Add file」→「Create new file」。
-2. ファイル名に `.github/workflows/build-apk.yml` と入力（先頭のドットも含める）。
-3. 展開フォルダーの `.github/workflows/build-apk.yml` をメモ帳で開き、内容すべてをコピーしてGitHubの本文へ貼り付け。
-4. 「Commit changes」でmainに保存。
-既に同じファイルがある場合は作り直さず、ファイルを開いて鉛筆ボタンで内容を確認してください。
+ZIPはAndroidプロジェクトが直下にある構造です。ZIP自体や外側のフォルダーをGitHubに入れず、展開した中身を入れてください。
+既存Discord BOTとmonst-hub-feedのフォルダーでは作業しません。
 
-## 3. ActionsでAPKを作る
-1. リポジトリ上部の「Actions」を押します。
-2. 初回に有効化確認が出たら「I understand my workflows, go ahead and enable them」を押します。
-3. 左の **Build Android APK** を選びます。
-4. アップロード時に自動実行されます。手動なら「Run workflow」→ branch: main → 緑の「Run workflow」。
-5. 数分待って最新の実行が緑のチェックになるまで待ちます。
-6. 実行名をクリックし、下へスクロールして **Artifacts** の **MONST-HUB-debug-apk** を押します（GitHubへのログインが必要）。
-7. ダウンロードしたZIPを展開すると **app-debug.apk** があります。`validation-reports`は検証結果で、アプリ本体ではありません。
-8. Artifactsの保存期間は30日です。期限切れならRun workflowで再作成します。
+## インストール・更新
+- APKをAndroidへ転送して開きます。必要な場合、そのファイルを開くアプリの「この提供元のアプリを許可」を有効にします。
+- v0.2はversionCode=2。同じ署名なら既存版へ上書きできます。
+- **この作業環境で作ったAPKとGitHubで作ったAPK、または別のActions実行のAPKではdebug署名が異なる場合があります。**
+- 上書きに失敗した場合は、旧MONST HUBの「設定・バックアップ」から先にバックアップを保存してからアンインストールし、新版で復元してください。旧v0.1はカレンダーのみで、管理データはまだありません。
+- 今後、管理データを入力した後はアンインストール前に必ずバックアップしてください。バックアップには端末の外で選んだ保存先を使えます。
+- APKは個人・友人向けdebug版です。Playストア向け公開署名は今回の対象外です。
 
-## 4. Androidへインストール
-1. app-debug.apkを自分のAndroid端末へ転送して開きます。
-2. 必要なら、そのファイルを開いたブラウザー／ファイルアプリの「この提供元のアプリを許可」を一時的に有効にします。
-3. インストール後「MONST HUB」を開きます。初回はネット接続が必要です。
-4. 許可設定はインストール後に元へ戻せます。Playストア公開用APKではなく個人用debug APKです。
+## 絆と日課の切替
+初期設定は毎朝4時・日本時間です。例：10/19の03:59までは10/18分、04:00から10/19分を表示します。
+アプリを閉じていても次に開いたときに当日分を表示します。開いたままなら約15秒以内、チェック操作時にも日付を再確認して切り替えます。バックグラウンド常駐や通知権限は不要です。
+前日の記録を消す方式ではなく、日付ごとに別の記録を持ちます。過去の日課・絆はバックアップにも含まれます（過去分の閲覧画面は未実装）。
+絆画面の手動リセットは**当日の全垢の絆のみ**。日課、オーブ、昨日以前の記録は残ります。リセット前には確認が表示されます。
 
-### 更新版がインストールできない場合
-GitHubの実行環境でdebug署名を作るため、別の実行で署名が変わり、上書きできない場合があります。
-今回の版はゲームアカウント情報を保存しません。旧MONST HUBをアンインストールして再インストールしてください（取得済みキャッシュも消えます）。将来12アカウント管理を追加する前に、固定署名とバックアップを導入する設計です。
+## バックアップ
+ホーム →「設定・バックアップ」→「バックアップを保存（JSON）」で保存先を選びます。
+復元は「バックアップから復元」でJSONを選び、内容が正常な場合のみ確認後に全管理データを置き換えます。キャンセル・形式違い・壊れたJSONなら現在のデータは変更しません。
+対象：アカウント名・メモ・URL、日課項目・日付別チェック、絆、オーブ残高・履歴、切替時刻。
+キャンペーンの取得済みキャッシュは対象外です。オンライン時に取り直します。
+バックアップは5MB以内。端末内データが読めない場合は自動で初期化せず、復元を案内します。
 
-## 使い方
-- 「今日」「前月」「翌月」で移動。「2026年10月」で対象月へ直接移動。
-- 日付をタップすると、その日の開催イベントと当日の属性を下に表示します。
-- 「すべて／書庫／神殿／ノマクエ／その他」で絞り込み。横にスワイプできます。
-- カレンダーの件数も選択カテゴリに連動。終了日を含む日単位表示、日本時間基準。
-- 属性が配信されていない日は「指定なし」。属性を推測して補いません。
-- 「データを更新」で再取得。最終更新はフィードのgenerated_atで、端末で更新ボタンを押した時刻ではありません。
-- degradedなら「データが不完全な可能性」を表示。配信状態だけ取得できない場合も注意を表示します。
-- 通信失敗時に前回取得があれば明記して表示。初回失敗なら再試行を案内。架空データを本番画面へ表示しません。
-- 0件でも公式イベントがないと断定しません。配信対象外や取得漏れの可能性があります。
-
-## つまずいたとき
-- **Actionsが赤い**：赤い実行 → build → 赤い手順を開き、エラー画面か文章を元のチャットに持ってきてください。
-- **gradlewがない**：外側フォルダーごとアップロードした可能性があります。Code直下にapp、gradle、gradlewが並ぶようにしてください。
-- **Workflow does not exist**：上の「.githubがアップロードできない場合」を確認。
-- **APKが見つからない**：緑の実行を開き、ArtifactsのMONST-HUB-debug-apkを展開してください。
-- **データ取得エラー**：端末の通信を確認し再更新。公開JSONの停止・形式変更時はアプリの修正が必要になる場合があります。
-
-## 開発・構成
-JDK 17 / Gradle 8.11.1 / Android Gradle Plugin 8.9.2 / compileSdk 35 / targetSdk 35 / minSdk 26。
-Gradle Wrapper一式を同梱。Actionsはテスト・lint・APK生成を順に実行し、失敗時はAPKを成功成果物として出しません。
-ローカルでSDKがある場合：Windowsは `gradlew.bat testDebugUnitTest lintDebug assembleDebug`、他は `bash ./gradlew testDebugUnitTest lintDebug assembleDebug`。
-12アカウント管理の拡張方針は `docs/ARCHITECTURE.md` を参照（今回未実装）。
-
-読み取り先（この2つへのHTTPS GETのみ）：
+## 通信と保存
+管理機能はオフラインで使えます。キャンペーンを開いたときに以下の2つをGETするだけです。
 - https://raw.githubusercontent.com/mochikibun/monst-hub-feed/main/public/campaigns.json
 - https://raw.githubusercontent.com/mochikibun/monst-hub-feed/main/public/status.json
 
-既存Discord BOTとmonst-hub-feedは変更しません。GitHubトークンや秘密情報は不要です。
-実データのテスト用スナップショットは2026-10-18取得。テスト専用で本番の代替データには使いません。
+サーバーへの管理データ送信はありません。マルチURLや掲載元を開いた場合は、外部アプリ・ブラウザーがそのURLを処理します。
+degradedの注意表示は変更していません。
 
-## 参照した公式仕様
-- Androidビルド環境：https://developer.android.com/build/releases/agp-8-9-0-release-notes
-- GitHub成果物：https://docs.github.com/en/actions/concepts/workflows-and-actions/workflow-artifacts
-- Gradle Wrapper：https://docs.gradle.org/8.11.1/userguide/gradle_wrapper.html
+## 開発・検証
+JDK 17 / Gradle 8.11.1 / AGP 8.9.2 / compileSdk・targetSdk 35 / minSdk 26。
+Wrapper一式、テスト、Actions設定を同梱。Windowsは `gradlew.bat testDebugUnitTest lintDebug assembleDebug`、Actionsは `bash ./gradlew --no-daemon testDebugUnitTest lintDebug assembleDebug`。
+Android環境準備には `packages: platform-tools` を明示し、配布終了した旧toolsを要求しません。
+追加機能の構造は `docs/ARCHITECTURE.md`、検証の範囲は `docs/VALIDATION.md` を参照。

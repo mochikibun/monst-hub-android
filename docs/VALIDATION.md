@@ -1,24 +1,23 @@
-# 検証結果（2026年10月18日・日本時間）
+# MONST HUB v0.2.0 検証結果
+2026年10月18日・日本時間
 
-## 実行済み
-- JDK 17 / Gradle 8.11.1 / AGP 8.9.2 / Android SDK 35でクリーンビルド成功。
-- `clean testDebugUnitTest lintDebug assembleDebug`：BUILD SUCCESSFUL。
-- 自動テスト6件：成功6件、失敗0件、スキップ0件。
-- Android lint：No issues found（エラー0、警告0）。
-- Android XML構文、APKのパッケージID・SDK情報を確認。
-- 配布ZIPのCRC、必須ファイル存在、元ファイルとのバイト一致を検証。
-- Gradle Wrapper本体を同梱し、Gradle配布ZIPの公式SHA256を固定。
+## 確認済み
+- クリーンビルド：clean testDebugUnitTest lintDebug assembleDebug → BUILD SUCCESSFUL。
+- 自動テスト21件、失敗0件、スキップ0件（フィード6件／管理モデル15件）。
+- Android lint：エラー0、警告0、No issues found。
+- Android XMLの構文、Actions YAMLの構文とplatform-tools指定を確認。
+- ZIP内のCRC、必須ファイル、元のソースとのバイト一致を確認。
+- APKの署名・パッケージID・バージョンを検証。
 
-## データ確認
-指定された公開campaigns.json/status.jsonを読み取り、schema_version=1、キャンペーン7件、status=degradedを確認。
-テストでは期間の開始日・終了日を含む判定、カテゴリフィルタ、日別属性、不明属性、degraded、正常状態、壊れたJSON、未対応スキーマ、空データ、2026年10月と閏年を確認。
+## テスト範囲
+初期12垢、別垢への記録分離、翌日への記録分離、朝4時前後の日本時間の切替、手動絆リセット時の日課・前日記録の維持、名前変更とIDの維持、垢削除後の履歴除去と新ID、オーブ増減・履歴・合計、バックアップの全項目復元、削除した日課の参照除去、不正スキーマ・重複ID・不正な型の拒否、残高の入力制限、不正なURLの拒否、垢0件からの再追加、切替時刻変更、日課の完了垢数。既存のキャンペーン期間・フィルタ・属性・degraded等のテストも維持。
 
-## 未実施・制約
-- Android実機／エミュレーターでの表示・操作・通信断試験は未実施。
-- GitHubへのアップロードとGitHub Actions上での実行は未実施。ユーザーのリポジトリは変更していません。
-- このAPKとGitHubで再生成したAPKはdebug署名が異なる場合があります。上書き不可なら旧版を削除して再インストールしてください。
-- 12アカウント管理は拡張方針のみ。今回の版では未実装。
-- 配信データは完全性を保証しません。開催時間・詳細は公式情報で確認してください。
+## 未確認の範囲
+- Android実機・エミュレーターでの見た目、操作、実際のファイル選択／保存、アプリ間のURL起動は未確認。
+- v0.2をGitHub Actionsで実行する作業は未実施。ユーザー側でPush後に実行します。
+- AtomicFileの端末上での書き込み障害試験は未実施。
+- 全項目の自動ゲーム連携はありません。ユーザーが手動で記録するアプリです。
+- 管理データの保存を始めた後は、署名違いで旧版の削除が必要になる場合に備えてバックアップしてください。
 
-## 変更対象
-この作業フォルダーでAndroidプロジェクトと配布ファイルのみ作成しました。Discord BOTとmonst-hub-feedへの書き込み・変更はしていません。
+## 変更範囲
+Androidアプリと同梱資料のみ。既存Discord BOT、monst-hub-feed、ユーザーのGitHubリポジトリやGitHub Desktopの同期フォルダーは変更していません。
