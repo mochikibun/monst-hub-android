@@ -1,22 +1,23 @@
-# v0.2 構成
-- HubActivity：ホーム、垢の編集、日課、絆、オーブ、URL、設定、Android標準ファイル選択を使ったバックアップ。
-- HubState：Androidに依存しない管理モデル。UUIDのアカウントID・日課IDで記録を保持し、名前変更では記録が動かない。
-- HubStore：アプリ専用領域のJSONをAtomicFileで保存。書き込み失敗では旧データへ戻す。壊れた保存データは勝手に初期化しない。
-- MainActivity／Campaign／FeedParser／FeedRepository：既存カレンダーとフィードの取得・キャッシュ。既存のdegraded表示を維持。
+# MONST HUB v0.3 構造
+- HubActivity：黒白ホーム、アカウント、日課・絆、オーブ、URL、追加した管理画面、バックアップ、画像添付。
+- HubState：アカウント等と日付別記録。schema_version=1を読み込み時に2へ移行。旧ファイル名は維持。
+- PlannerData：inventory / custom_characters / teams / missions / goals / formations / orb_plans。UUIDで保持。入力・参照・上限を検証。
+- HubStore：全管理データを一つのAtomicFileで保存。保存前に完全な再検証。上限20MB。破損を検出しても勝手に初期化しない。
+- CatalogRepository：公開図鑑をJsonReaderでストリーミング解析し、検索に使う項目だけSQLiteへ保存。評価文や画像は保存しない。データ更新はSQLiteトランザクションで実行し、失敗時は前回分に戻す。
+- 検索はNFKCとひらがなへの正規化、SQLプレースホルダー、LIKEのワイルドカードのエスケープ。図鑑・個別追加・図鑑から消えた所持記録を合わせて検索する。
+- CatalogUpdates / CatalogUpdateService：JobSchedulerの24時間周期と起動時ジョブ。更新日時が24時間以上前か未取得の場合だけ取り込み。既定はUNMETEREDネットワーク、永続ジョブで再起動後も継続。設定のON/OFFを管理データに保持。
+- DeadlineScheduler / DeadlineReceiver：通知チャンネルとAndroidの非厳密アラーム。記録の完了・通知済みトークン・削除を再確認し、同じ期限の重複通知を避ける。再起動で再設定。
+- MainActivity / Campaign / FeedParser / FeedRepository：既存のキャンペーンカレンダー。degraded案内は従来通り。
 
-## 保存形式
-format=monst-hub-backup、schema_version=1。accountsはid/name/memo/url/orbs。tasksはid/name。
-daysは日本時間の切替時刻を差し引いた日付→accountId→taskId/bondのboolean。
-orb_historyはaccount_id/at/delta/balance/memo。reset_hourは0〜23（既定4）。
-バックアップを検証し、重複ID、不明な参照、不正なURL・残高・日付・型を拒否。復元は確認後に保存成功してからメモリ上のデータを置き換える。
-変更は状態のコピーに適用し、保存に成功した場合だけ画面の状態を更新する。
-100垢・30日課・10,000履歴・5MBの上限。履歴表示は最新50件。これらの上限を超えるバックアップは拒否する。
+## バックアップ
+schema_version=2。plannerの追加データ、個別追加キャラ、画像、独立したbond_reset_hourを保存。図鑑キャッシュは対象外。所持記録には名前等のスナップショットを持ち、取得元の削除・変更やキャッシュ未取得でも復元した所持を検索できる。
+古いschema_version=1ではplannerを空で追加し、絆の切替は従来のreset_hourを引き継ぐ。未知の将来スキーマは拒否する。
 
-## 切替・リセット
-日付はAsia/Tokyoで計算。午前4時を境に新しいキーを参照するため、アプリを閉じていても起動時に正しい当日を表示。
-表示中は15秒ごととチェック操作前に再確認。手動リセットは当日のbondフラグのみ。
+## キャラID
+図鑑はgw:ID（GameWithの内部ID）、個別追加はcustom:UUID。
+ゲーム内図鑑番号は取得元の数値アイコン項目がある場合のみ使用する。内部IDを番号として表示しない。名称の一致で自動統合せず、個別追加と各進化形態を保持する。
 
-## 将来の拡張
-現在は端末内のみ。ログイン情報・ゲームへの操作・自動データ取得は実装しない。
-固定の配布用署名、過去の日課表示、垢の並べ替え、複数URLの登録等は今後の対象。
-BOT・フィードリポジトリへの変更処理は一切含まない。
+## 範囲
+管理の数値・チェック・キャラ所持は手動。ゲームアカウントへのログインやゲーム内データの自動取得はしない。
+Google Play公開向けの署名・権利確認・申請は今回の作業対象外。
+Discord BOTとmonst-hub-feed、ユーザーのGitHub同期フォルダーへの変更はしない。

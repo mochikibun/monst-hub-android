@@ -13,7 +13,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.*;
 public final class MainActivity extends Activity {
- private static final int BG=Color.rgb(8,23,44),CARD=Color.rgb(17,39,65),ACCENT=Color.rgb(100,216,250),TEXT=Color.rgb(235,246,255),MUTED=Color.rgb(157,181,205);
+ private static final int BG=Color.rgb(8,8,8),CARD=Color.rgb(22,22,22),ACCENT=Color.rgb(244,244,244),TEXT=Color.rgb(244,244,244),MUTED=Color.rgb(155,155,155);
  private static final ZoneId JST=ZoneId.of("Asia/Tokyo");
  private final ExecutorService worker=Executors.newSingleThreadExecutor();
  private LocalDate selected=LocalDate.now(JST); private YearMonth month=YearMonth.from(selected);
@@ -26,7 +26,7 @@ public final class MainActivity extends Activity {
  @Override protected void onSaveInstanceState(Bundle out){super.onSaveInstanceState(out);out.putString("selected",selected.toString());out.putString("month",month.toString());out.putString("filter",filter);}
  @Override protected void onDestroy(){worker.shutdownNow();super.onDestroy();}
  private int dp(float x){return Math.round(x*getResources().getDisplayMetrics().density);}
- private GradientDrawable bg(int color){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(dp(12));return d;}
+ private GradientDrawable bg(int color){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(dp(12));d.setStroke(dp(1),Color.rgb(48,48,48));return d;}
  private TextView label(String s,int size,int color){TextView t=new TextView(this);t.setText(s);t.setTextSize(size);t.setTextColor(color);t.setPadding(dp(8),dp(6),dp(8),dp(6));return t;}
  private Button button(String s,Runnable action){Button b=new Button(this);b.setText(s);b.setTextSize(13);b.setAllCaps(false);b.setTextColor(ACCENT);b.setBackground(bg(CARD));b.setMinWidth(0);b.setMinimumWidth(0);b.setMinHeight(dp(48));b.setPadding(dp(6),0,dp(6),0);b.setOnClickListener(v->action.run());return b;}
  private void addSpace(LinearLayout l){Space s=new Space(this);l.addView(s,new LinearLayout.LayoutParams(1,dp(10)));}
@@ -59,7 +59,7 @@ public final class MainActivity extends Activity {
   else {int count=0;for(Campaign c:data.feed.campaigns)if(c.active(selected,filter)){count++;event(c);}if(count==0)body.addView(label("該当するイベントは配信データにありません。\n未掲載・取得漏れの可能性もあるため、公式情報をご確認ください。",14,MUTED));}
   addSpace(body);body.addView(label("非公式の補助アプリです。開催時間・詳細は公式情報をご確認ください。",12,MUTED));
  }
- private void notice(String s){TextView t=label(s,14,Color.rgb(255,219,144));t.setBackground(bg(Color.rgb(65,48,31)));body.addView(t);addSpace(body);}
+ private void notice(String s){TextView t=label(s,14,Color.rgb(225,225,225));t.setBackground(bg(Color.rgb(35,35,35)));body.addView(t);addSpace(body);}
  private void move(int by){month=month.plusMonths(by);selected=month.atDay(Math.min(selected.getDayOfMonth(),month.lengthOfMonth()));render();}
  private void calendar(){
   LinearLayout days=new LinearLayout(this);for(String w:new String[]{"日","月","火","水","木","金","土"}){TextView t=label(w,13,MUTED);t.setGravity(Gravity.CENTER);days.addView(t,new LinearLayout.LayoutParams(0,dp(32),1));}body.addView(days);

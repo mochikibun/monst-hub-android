@@ -10,19 +10,21 @@ public final class HubState {
  final JSONObject root;
  private HubState(JSONObject root){this.root=root;}
  public static HubState create() throws Exception {
-  JSONObject r=new JSONObject();r.put("format","monst-hub-backup");r.put("schema_version",1);
+  JSONObject r=new JSONObject();r.put("format","monst-hub-backup");r.put("schema_version",2);
   r.put("accounts",new JSONArray());r.put("tasks",new JSONArray());r.put("days",new JSONObject());r.put("orb_history",new JSONArray());r.put("reset_hour",4);
-  HubState s=new HubState(r);
+  HubState s=new HubState(r);PlannerData.ensure(r);
   for(String name:new String[]{"ログイン","日課","書庫","神殿"})s.addTask(name);
   for(int i=1;i<=12;i++)s.addAccount(i==1?"メイン":"サブ"+(i-1));
   return s;
  }
  public static HubState parse(String json)throws Exception {
   JSONObject r=new JSONObject(json);
-  if(!"monst-hub-backup".equals(r.getString("format"))||r.getInt("schema_version")!=1)throw new IllegalArgumentException("MONST HUB形式のバックアップではありません");
-  HubState s=new HubState(r);s.validate();return s;
+  if(!"monst-hub-backup".equals(r.getString("format"))||(r.getInt("schema_version")!=1&&r.getInt("schema_version")!=2))throw new IllegalArgumentException("MONST HUB形式のバックアップではありません");
+  HubState s=new HubState(r);if(r.getInt("schema_version")==1){PlannerData.ensure(r);r.put("schema_version",2);}s.validate();PlannerData.validate(s);return s;
  }
  public HubState copy()throws Exception{return parse(json());}
+ public PlannerData planner(){return new PlannerData(this);}
+ public LocalDate bondDay(Instant now){return now.atZone(ZoneId.of("Asia/Tokyo")).minusHours(root.optInt("bond_reset_hour",resetHour())).toLocalDate();}
  public String json(){return root.toString();}
  public JSONArray accounts()throws Exception{return root.getJSONArray("accounts");}
  public JSONArray tasks()throws Exception{return root.getJSONArray("tasks");}
@@ -46,6 +48,7 @@ public final class HubState {
  public void deleteAccount(String id)throws Exception{
   account(id);JSONArray a=accounts();for(int i=0;i<a.length();i++)if(a.getJSONObject(i).getString("id").equals(id)){a.remove(i);break;}
   JSONObject days=root.getJSONObject("days");for(String day:new ArrayList<>(keysOf(days))){JSONObject d=days.getJSONObject(day);d.remove(id);if(d.length()==0)days.remove(day);}
+  planner().deleteAccountReferences(id);
   JSONArray h=history();for(int i=h.length()-1;i>=0;i--)if(id.equals(h.getJSONObject(i).getString("account_id")))h.remove(i);
  }
  public String addTask(String name)throws Exception{if(tasks().length()>=30)throw new IllegalArgumentException("日課は30項目までです");String key=id();tasks().put(new JSONObject().put("id",key).put("name",text(name,60)));return key;}
@@ -71,7 +74,7 @@ public final class HubState {
  private static int integer(JSONObject o,String key,int min,int max)throws Exception{Object x=o.get(key);require(x instanceof Number&&((Number)x).doubleValue()==((Number)x).longValue());long v=((Number)x).longValue();require(v>=min&&v<=max);return (int)v;}
  private static String string(JSONObject o,String key,int max,boolean empty)throws Exception{Object x=o.get(key);require(x instanceof String);String s=(String)x;require(s.length()<=max&&(empty||!s.trim().isEmpty()));return s;}
  private void validate()throws Exception{
-  integer(root,"schema_version",1,1);integer(root,"reset_hour",0,23);JSONArray as=accounts(),ts=tasks();require(as.length()<=MAX_ACCOUNTS&&ts.length()<=30);Set<String> ids=new HashSet<>(),keys=new HashSet<>();keys.add("bond");
+  integer(root,"schema_version",2,2);integer(root,"reset_hour",0,23);JSONArray as=accounts(),ts=tasks();require(as.length()<=MAX_ACCOUNTS&&ts.length()<=30);Set<String> ids=new HashSet<>(),keys=new HashSet<>();keys.add("bond");
   for(int i=0;i<as.length();i++){JSONObject a=as.getJSONObject(i);String id=string(a,"id",100,false);require(ids.add(id));string(a,"name",60,false);string(a,"memo",2000,true);require(validUrl(string(a,"url",4000,true)));integer(a,"orbs",0,MAX_ORBS);}
   for(int i=0;i<ts.length();i++){JSONObject t=ts.getJSONObject(i);require(keys.add(string(t,"id",100,false)));string(t,"name",60,false);}
   JSONObject ds=root.getJSONObject("days");require(ds.length()<=10000);
