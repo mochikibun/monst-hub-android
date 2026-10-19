@@ -22,13 +22,45 @@ jobs:
       - name: Install Android SDK
         run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
       - uses: gradle/actions/setup-gradle@v4
-      - name: Test, lint and build debug APK
-        run: bash ./gradlew --no-daemon testDebugUnitTest lintDebug assembleDebug
-      - name: Save APK
+      - name: Prepare stable signing key (optional)
+        id: signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.MONST_HUB_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.MONST_HUB_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.MONST_HUB_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.MONST_HUB_KEY_PASSWORD }}
+        run: |
+          if [[ -n "$KEYSTORE_BASE64" && -n "$KEYSTORE_PASSWORD" && -n "$KEY_ALIAS" && -n "$KEY_PASSWORD" ]]; then
+            echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/monst-hub-signing.jks"
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Stable signing secrets are not configured; only the debug APK will be built."
+          fi
+      - name: Test, lint and build APKs
+        env:
+          MONST_HUB_KEYSTORE_PATH: ${{ runner.temp }}/monst-hub-signing.jks
+          MONST_HUB_KEYSTORE_PASSWORD: ${{ secrets.MONST_HUB_KEYSTORE_PASSWORD }}
+          MONST_HUB_KEY_ALIAS: ${{ secrets.MONST_HUB_KEY_ALIAS }}
+          MONST_HUB_KEY_PASSWORD: ${{ secrets.MONST_HUB_KEY_PASSWORD }}
+        run: |
+          bash ./gradlew --no-daemon testDebugUnitTest lintDebug assembleDebug
+          if [[ "${{ steps.signing.outputs.ready }}" == "true" ]]; then
+            bash ./gradlew --no-daemon assembleRelease
+          fi
+      - name: Save debug APK
         uses: actions/upload-artifact@v4
         with:
           name: MONST-HUB-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30
+      - name: Save stable signed APK
+        if: steps.signing.outputs.ready == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: MONST-HUB-stable-apk
+          path: app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 30
       - name: Save test and lint reports

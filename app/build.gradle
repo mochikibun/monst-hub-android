@@ -1,8 +1,29 @@
 plugins { id 'com.android.application' }
+def signingStoreFile = System.getenv('MONST_HUB_KEYSTORE_PATH')
+def signingStorePassword = System.getenv('MONST_HUB_KEYSTORE_PASSWORD')
+def signingKeyAlias = System.getenv('MONST_HUB_KEY_ALIAS')
+def signingKeyPassword = System.getenv('MONST_HUB_KEY_PASSWORD')
+def hasStableSigning = signingStoreFile && signingStorePassword && signingKeyAlias && signingKeyPassword
 android {
  namespace 'com.mochikibun.monsthub'
  compileSdk 35
- defaultConfig { applicationId 'com.mochikibun.monsthub'; minSdk 26; targetSdk 35; versionCode 5; versionName '0.3.2' }
+ defaultConfig { applicationId 'com.mochikibun.monsthub'; minSdk 26; targetSdk 35; versionCode 7; versionName '0.4.1' }
+ signingConfigs {
+  if (hasStableSigning) {
+   stable {
+    storeFile file(signingStoreFile)
+    storePassword signingStorePassword
+    keyAlias signingKeyAlias
+    keyPassword signingKeyPassword
+   }
+  }
+ }
+ buildTypes {
+  release {
+   minifyEnabled false
+   if (hasStableSigning) signingConfig signingConfigs.stable
+  }
+ }
  testOptions { unitTests { includeAndroidResources = true } }
  compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
 }

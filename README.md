@@ -121,11 +121,13 @@ ZIPはAndroidプロジェクトが直下にある構造です。ZIP自体や外�
 
 ## インストール・更新
 - APKをAndroidへ転送して開きます。必要な場合、そのファイルを開くアプリの「この提供元のアプリを許可」を有効にします。
-- v0.3.1はversionCode=4。同じ署名なら既存版へ上書きできます。
-- **この作業環境で作ったAPKとGitHubで作ったAPK、または別のActions実行のAPKではdebug署名が異なる場合があります。**
-- 上書きに失敗した場合は、旧MONST HUBの「設定・バックアップ」から先にバックアップを保存してからアンインストールし、新版で復元してください。旧v0.1はカレンダーのみで、管理データはまだありません。
-- 今後、管理データを入力した後はアンインストール前に必ずバックアップしてください。バックアップには端末の外で選んだ保存先を使えます。
-- APKは個人・友人向けdebug版です。Playストア向け公開署名は今回の対象外です。
+- v0.4.0はversionCode=6。後継版はversionCodeを6より大きくしてください。
+- **更新APKは、インストール済みAPKと同じ署名鍵で署名する必要があります。** この作業環境で作ったAPK、別のGitHub Actions実行で作ったAPK、ローカルPCで作ったAPKは、既定のdebug署名が異なる場合があります。
+- GitHub Actionsの`MONST-HUB-debug-apk`はテスト用です。安定して上書き更新するAPKは`MONST-HUB-stable-apk`を使います。後者を作るには、v0.4.0と同じkeystoreをGitHubリポジトリのActions secretsへ設定してください。
+- Actions secretsの名前は `MONST_HUB_KEYSTORE_BASE64`、`MONST_HUB_KEYSTORE_PASSWORD`、`MONST_HUB_KEY_ALIAS`、`MONST_HUB_KEY_PASSWORD` です。値はGitHubの「Settings → Secrets and variables → Actions」で登録し、チャットや公開ファイルに貼らないでください。
+- Windowsの標準Android debug keystoreを使ってv0.4.0を作った場合、通常の保存場所は`%USERPROFILE%\.android\debug.keystore`です。PowerShellでBase64化する例: `[Convert]::ToBase64String([IO.File]::ReadAllBytes("$env:USERPROFILE\.android\debug.keystore")) | Set-Clipboard`。標準debug keystoreのaliasは`androiddebugkey`、パスワードは`android`です。別の署名鍵で作った場合は、そのkeystore・alias・パスワードを使ってください。
+- v0.4.0の署名鍵が保存されていない場合、新しい署名鍵で上書き更新はできません。旧アプリの「設定・バックアップ」からJSONを保存してから一度アンインストールし、新しい安定署名版を入れて復元してください。以後は同じ安定署名鍵で作ったAPKを使います。
+- `applicationId`は`com.mochikibun.monsthub`のまま維持してください。APKは個人・友人向けです。Playストア向け公開署名は今回の対象外です。
 
 ## 絆と日課の切替
 初期設定は毎朝4時・日本時間です。例：10/19の03:59までは10/18分、04:00から10/19分を表示します。
